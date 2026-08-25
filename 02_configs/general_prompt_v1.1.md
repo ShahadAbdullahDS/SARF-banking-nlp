@@ -13,7 +13,7 @@ Return CSV rows only, with these columns:
 id,text,pool,topic,genre,length_bucket,generator,prompt_version,batch_id,created_at,audit_status
 ```
 
-Use `general` for pool, `v1` for prompt_version, and `pending` for audit_status.
+Use `general` for pool, `v1.1` for prompt_version, and `pending` for audit_status.
 
 ## Content requirements
 - Write natural Saudi-style Arabic, not formal MSA and not deliberately broken Arabic.
