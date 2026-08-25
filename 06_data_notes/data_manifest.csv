@@ -1,1 +1,6 @@
 file_id,role,source_url,local_drive_path,raw_or_processed,rows,columns,language_or_dialect,labels,version_or_hash,owner,status,notes
+msa_train_v1,train,https://github.com/SinaLab/ArBanking77,02_processed_data/msa_train_v1.csv,processed,10732,label|text,MSA,77,v1,A,verified,PAL excluded before audit
+msa_val_v1,validation,https://github.com/SinaLab/ArBanking77,02_processed_data/msa_val_v1.csv,processed,1229,label|text,MSA,77,v1,A,verified,PAL excluded before audit
+msa_test_v1,secondary_retention_check,https://github.com/SinaLab/ArBanking77,02_processed_data/msa_test_v1.csv,processed,3574,label|text,MSA,77,v1,A,verified,Not used for tuning
+saudi_test_frozen_v1,planned_evaluation_only,https://github.com/SinaLab/ArBanking77,02_processed_data/saudi_test_frozen_v1.csv,processed,3580,label|text,Saudi Arabic,77,v1,A,verified,Frozen; 8 exact duplicate texts retained
+
