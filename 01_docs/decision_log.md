@@ -8,3 +8,4 @@
 | 2026-08-25 | Use 3 seeds per experiment.                            | To report mean ± standard deviation.      | A |
 | 2026-08-25 | Keep the scope to intent classification only.          | No chatbot, RAG, or extra dialects.       | A |
 | 2026-08-25 | Use the verified processed MSA files: 10,732 train rows and 1,229 validation rows; retain the Saudi test as a frozen 3,580-row evaluation split. | Audit confirmed 77 matching labels across all MSA and Saudi files; PAL is excluded from the project pipeline. | A |
+| 2026-08-25 | Accept the synthetic Saudi pilot with revisions; keep all 120 pilot rows as raw audit artifacts only and exclude them from the final CPT corpus. | Manual review passed language, privacy, genre, and diversity checks; prompts were revised for ambiguous general wording, unique IDs, and generic banking content. Production generation must use API batches with local metadata and automatic checks. | A |
