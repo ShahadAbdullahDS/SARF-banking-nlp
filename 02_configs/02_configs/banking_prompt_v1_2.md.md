@@ -23,6 +23,8 @@ Use `banking` for pool, `v1` for prompt_version, and `pending` for audit_status.
 - Do not copy or paraphrase any known ArBanking77 example.
 - Do not include personal names, phone numbers, account numbers, addresses, IDs, or private information.
 - Avoid repeated templates, repeated openings, and near-duplicate texts.
+- Use generic banking concepts only. Do not mention real bank names, named card products, payment networks, loyalty programs, wallets, or product-specific fees, rewards, or benefits.
+
 
 ## Genre guidance
 - `question`: a natural customer question.
