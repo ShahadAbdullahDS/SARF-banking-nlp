@@ -22,6 +22,9 @@ Use `general` for pool, `v1` for prompt_version, and `pending` for audit_status.
 - Use everyday, non-financial topics only.
 - Do not include personal names, phone numbers, account numbers, addresses, IDs, or private information.
 - Avoid repeated templates, repeated openings, and near-duplicate texts.
+- Use globally unique IDs with the batch prefix, for example: `general_pilot_01_001`.
+- Avoid ambiguous standalone words that may be banking-related, such as `branch`, unless the non-financial context is explicit in the same text.
+
 
 ## Strict exclusions
 Do NOT mention or imply banks, banking applications, cards, transfers, balances, payments, invoices, money, currencies, loans, accounts, ATMs, or any banking intent from ArBanking77.
