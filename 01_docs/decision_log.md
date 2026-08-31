@@ -45,3 +45,5 @@
 **Impact on manual audit:** 8 of the 300 general-audit rows fell out of the final 12,000 — 5 were already independently flagged Fail for this exact issue (confirms manual audit accuracy); 3 were Pass-rated rows excluded only by normal hash-cutoff reshuffling (no quality concern). The banking 60-row sample was regenerated from the cleaned pool before audit began, so unaffected.
 
 **Recommendation:** Add this Latin-character check as a standard automated validation step for any future production runs.
+
+| 2026-08-31 | Issue SARF Synthetic Saudi Arabic Corpus v2 after targeted post-audit correction. | The first manual general audit identified rows marked Fail or Unsure that remained in v1 final selection. After recalibration, unresolved flagged rows were excluded and replaced from the existing clean reserve pool without new generation. General nested subsets, metadata, leakage checks, hashes, and freeze documentation were regenerated for v2. | B / A |
