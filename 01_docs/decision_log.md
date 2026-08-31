@@ -46,4 +46,21 @@
 
 **Recommendation:** Add this Latin-character check as a standard automated validation step for any future production runs.
 
-| 2026-08-31 | Issue SARF Synthetic Saudi Arabic Corpus v2 after targeted post-audit correction. | The first manual general audit identified rows marked Fail or Unsure that remained in v1 final selection. After recalibration, unresolved flagged rows were excluded and replaced from the existing clean reserve pool without new generation. General nested subsets, metadata, leakage checks, hashes, and freeze documentation were regenerated for v2. | B / A |
+---
+
+## [2026-08-31] Corpus v2 issued after targeted post-audit correction
+
+**Issue:** An independent review (Person A) found that the v1 general final file (`general_12k_final.csv`) still contained 27 rows carrying a manual-audit `Fail` or `Unsure` result (out of the original 32 flagged rows — 5 had already been removed earlier by the Latin-contamination cleaning). A frozen file should not retain rows the audit itself rejected without resolution.
+
+**Fix:**
+- Re-reviewed all 32 originally flagged rows against the project's official Pass/Fail/Unsure standard, row by row. Results saved to `general_audit_recalibrated.csv`.
+- 19 rows were recalibrated to `Pass` (the earlier review had been over-strict; an occasional plain-MSA word or minor stylistic quirk is not disqualifying on its own).
+- 8 rows retained a genuine, specific defect (a wrong/garbled word, fused words, or a broken sentence) and were excluded from the candidate pool.
+- The 8 excluded rows were replaced using the existing clean reserve pool, re-selected via the same fixed-seed stable-hash method (`sarf_general_corpus_v1`) — no new Gemini API generation was used.
+- Each of the 8 replacement rows was individually read and manually judged; all 8 passed. Full excluded → replacement mapping: `general_audit_correction_log.csv`.
+- `audit_status` / `cleaning_status` metadata corrected on every row in the v2 files (no row remains marked `pending`).
+- Saudi frozen-test leakage check and file-integrity checks (blanks, duplicate IDs, duplicate texts, Latin-character rows) re-run on v2: all pass, 0 leakage in both pools.
+
+**Impact:** General nested subsets (`3K ⊆ 6K ⊆ 12K`), banking file, manifest, and freeze documentation were all reissued as **v2**. v1 files are retained unmodified for provenance and are not to be used for training. No new generation, prompts, schema, or topic plan changes were involved.
+
+**Documentation:** `corpus_manifest_v2.json`, `general_audit_recalibrated.csv`, `general_audit_correction_log.csv`, `saudi_test_leakage_report_v2.csv`, `CORPUS_CARD_v2.md`, `FREEZE_DECLARATION_v2.md`.
