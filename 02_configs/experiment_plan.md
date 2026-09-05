@@ -51,6 +51,8 @@ Use the same fixed random seeds for every official AraBERT condition:
 ```python
 SEEDS = [42, 123, 2026]
 ```
+Apply these three seeds to E0, E1, E2, E3, and EB. Record the seed in each run ID, config file, run log, and evaluation summary. Do not change, add, or remove seeds after official runs begin.
+
 
 ## Baseline Models
 
