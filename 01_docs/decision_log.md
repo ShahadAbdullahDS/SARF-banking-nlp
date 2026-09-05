@@ -1,66 +1,19 @@
 # Decision Log
 
-| Date       | Decision                                               | Why                                       | Owner |
-|------------|--------------------------------------------------------|-------------------------------------------|---|
-| 2026-08-25 | Use AraBERTv2-base as the main model.                  | It is the main model for the CPT study.   | A |
-| 2026-08-25 | Use MSA train/dev and a frozen Saudi evaluation split. | Saudi data must not be used for tuning.   | A |
-| 2026-08-25 | Run E0, E1 (3K), E2 (6K), E3 (12K), and EB.            | This is the approved experimental design. | A |
-| 2026-08-25 | Use 3 seeds per experiment.                            | To report mean ± standard deviation.      | A |
-| 2026-08-25 | Keep the scope to intent classification only.          | No chatbot, RAG, or extra dialects.       | A |
-| 2026-08-25 | Use the verified processed MSA files: 10,732 train rows and 1,229 validation rows; retain the Saudi test as a frozen 3,580-row evaluation split. | Audit confirmed 77 matching labels across all MSA and Saudi files; PAL is excluded from the project pipeline. | A |
-| 2026-08-25 | Accept the synthetic Saudi pilot with revisions; keep all 120 pilot rows as raw audit artifacts only and exclude them from the final CPT corpus. | Manual review passed language, privacy, genre, and diversity checks; prompts were revised for ambiguous general wording, unique IDs, and generic banking content. Production generation must use API batches with local metadata and automatic checks. | A |
-| 2026-08-27 | Close the initial EDA and data-quality audit; retain all approved processed splits unchanged. | The SARF EDA verified the audited split counts, the shared 77-intent label set, no missing labels or empty texts, duplicate status by split, class-support variation, and text-length patterns. The frozen Saudi split remains unchanged and is reserved for planned final evaluation. The EDA findings support Macro-F1 as the primary metric. | A |
-
-## [2026-08-30] Banking validation filter bug fix (named-term false positives)
-
-**Issue:** The banking-pool validation filter (`validate_banking_rows`) was hard-rejecting valid banking texts due to naive substring matching against `BANKING_NAMED_TERMS`. The term "ساب" (intended to catch "بنك ساب") matched inside unrelated words like "الحساب" (account), causing false rejections.
-
-**Fix:**
-- Replaced substring (`in`) matching with word-boundary regex matching (`\b` + `re.escape(term)`, `re.UNICODE`) via a new `term_hits()` helper.
-- Removed the bare term "ساب" from `BANKING_NAMED_TERMS` (redundant — "بنك ساب" already covers the real bank name).
-- Moved the ambiguous term "مدى" (mada card network vs. the common word "extent") from hard-reject to a new soft-flag list `BANKING_SOFT_FLAG_TERMS` — kept in the corpus but flagged in `notes` for review, rather than auto-rejected.
-
-**Verification:** Re-tested against the 4 originally falsely-rejected production texts — all 4 now correctly pass. Full 144-job banking production run proceeded after this fix with no further false positives of this kind observed.
-
-**Impact:** No data loss — fix applied before full-scale production.
-
----
-
-## [2026-08-30] Latin-character contamination discovered and removed (both pools)
-
-**Issue:** Manual audit surfaced synthetic rows containing stray Latin/ASCII characters embedded in otherwise-Arabic text — two patterns: (1) a literal pool-label leak (`،general` / `،banking` appended to text), and (2) garbled word-level corruption (English fragments/words spliced into Arabic words, e.g. "تكhelا", "قبلDeadline", "tonight"). Root cause not fully isolated — likely a generation-side artifact rather than a deterministic code bug.
-
-**Detection method:** Full-corpus regex scan (`[a-zA-Z]` against the `text` field) on both final pools.
-
-**Scope found:** General: 128 / 12,003 rows (~1.07%). Banking: 14 / 3,036 rows (~0.46%).
-
-**Fix:**
-- Contaminated rows removed from both pools' candidate sets before final slicing.
-- General: shortfall of 125 rows required 8 additional production jobs (job_id 8000–8007) to restore ≥12,000 clean candidates.
-- Banking: sufficient surplus existed (3,022 clean) — no new production needed.
-- Final `general_3k/6k/12k` and `banking_3k` re-sliced from cleaned pools using the same fixed-seed stable-hash method, preserving nesting (3k ⊂ 6k ⊂ 12k).
-- Saudi frozen-test leakage check re-run on cleaned files: 0 exact / 0 normalized matches, both pools (unchanged).
-- Contaminated rows logged: `general_latin_contamination_log.csv`, `banking_latin_contamination_log.csv`.
-
-**Impact on manual audit:** 8 of the 300 general-audit rows fell out of the final 12,000 — 5 were already independently flagged Fail for this exact issue (confirms manual audit accuracy); 3 were Pass-rated rows excluded only by normal hash-cutoff reshuffling (no quality concern). The banking 60-row sample was regenerated from the cleaned pool before audit began, so unaffected.
-
-**Recommendation:** Add this Latin-character check as a standard automated validation step for any future production runs.
-
----
-
-## [2026-08-31] Corpus v2 issued after targeted post-audit correction
-
-**Issue:** An independent review (Person A) found that the v1 general final file (`general_12k_final.csv`) still contained 27 rows carrying a manual-audit `Fail` or `Unsure` result (out of the original 32 flagged rows — 5 had already been removed earlier by the Latin-contamination cleaning). A frozen file should not retain rows the audit itself rejected without resolution.
-
-**Fix:**
-- Re-reviewed all 32 originally flagged rows against the project's official Pass/Fail/Unsure standard, row by row. Results saved to `general_audit_recalibrated.csv`.
-- 19 rows were recalibrated to `Pass` (the earlier review had been over-strict; an occasional plain-MSA word or minor stylistic quirk is not disqualifying on its own).
-- 8 rows retained a genuine, specific defect (a wrong/garbled word, fused words, or a broken sentence) and were excluded from the candidate pool.
-- The 8 excluded rows were replaced using the existing clean reserve pool, re-selected via the same fixed-seed stable-hash method (`sarf_general_corpus_v1`) — no new Gemini API generation was used.
-- Each of the 8 replacement rows was individually read and manually judged; all 8 passed. Full excluded → replacement mapping: `general_audit_correction_log.csv`.
-- `audit_status` / `cleaning_status` metadata corrected on every row in the v2 files (no row remains marked `pending`).
-- Saudi frozen-test leakage check and file-integrity checks (blanks, duplicate IDs, duplicate texts, Latin-character rows) re-run on v2: all pass, 0 leakage in both pools.
-
-**Impact:** General nested subsets (`3K ⊆ 6K ⊆ 12K`), banking file, manifest, and freeze documentation were all reissued as **v2**. v1 files are retained unmodified for provenance and are not to be used for training. No new generation, prompts, schema, or topic plan changes were involved.
-
-**Documentation:** `corpus_manifest_v2.json`, `general_audit_recalibrated.csv`, `general_audit_correction_log.csv`, `saudi_test_leakage_report_v2.csv`, `CORPUS_CARD_v2.md`, `FREEZE_DECLARATION_v2.md`.
+| Date | Decision / Event | Why | Action / Verification | Owner | Evidence / Status |
+| --- | --- | --- | --- | --- | --- |
+| 2026-08-25 | Use AraBERTv2-base as the main model. | It is the main model for the Continued Pre-Training study. | AraBERTv2-base is used for the controlled CPT conditions. | A | Approved |
+| 2026-08-25 | Use MSA train and validation data with a frozen Saudi evaluation split. | Saudi data must not be used for training, tuning, or checkpoint selection. | Use 10,732 MSA training rows and 1,229 MSA validation rows; retain the 3,580-row Saudi test split for final evaluation only. | A | Approved; PAL excluded from the pipeline |
+| 2026-08-25 | Run five AraBERT conditions: E0, E1, E2, E3, and EB. | The design separates no Saudi exposure, general Saudi-style exposure at different corpus sizes, and the additional banking-domain exposure. | E0 = no CPT; E1 = general 3K; E2 = general 6K; E3 = general 12K; EB = general 12K plus banking 3K. | A | Approved experimental design |
+| 2026-08-25 | Use three random seeds per condition. | Repeated runs support reporting mean ± standard deviation and reduce dependence on one random initialization. | Apply the same three approved seeds to all five AraBERT conditions. | A | Approved |
+| 2026-08-25 | Keep the project scope limited to banking intent classification. | The project does not include a chatbot, RAG system, extra dialects, or unrelated tasks. | All data preparation and experiments remain within the intent-classification pipeline. | A | Approved |
+| 2026-08-25 | Accept the synthetic Saudi pilot with revisions, but exclude it from the final CPT corpus. | The pilot was useful for checking language, privacy, genre, and diversity before production generation. | Keep all 120 pilot rows as raw audit artifacts only. Use revised prompts, unique IDs, generic banking content, local metadata, and automatic checks for production batches. | A | Pilot excluded from final corpus |
+| 2026-08-27 | Close the initial EDA and data-quality audit. | The EDA verified split counts, the shared 77-intent label set, missing and empty values, duplicate status, class-support variation, and text-length patterns. | Retain the approved processed splits unchanged and reserve the Saudi split for final evaluation. Use Macro-F1 as the primary metric. | A | EDA phase closed |
+| 2026-08-30 | Fix false rejections in the banking validation filter. | Naive substring matching treated the common word `ساب` inside `الحساب` as a named bank term. | Replace substring matching with Unicode word-boundary regex matching through `term_hits()`; remove the bare `ساب` term; move ambiguous `مدى` to a soft-flag list. Re-test the four affected rows and continue the 144-job banking run. | B | All four affected rows passed; no data loss |
+| 2026-08-30 | Detect and remove Latin-character contamination from both synthetic pools. | Some generated rows contained pool-label leakage or English fragments embedded in Arabic words. | Scan the full text fields with `[a-zA-Z]`; remove contaminated candidates; add eight general production jobs to restore the general pool; use the existing banking surplus; re-slice with the same fixed-seed stable-hash method. | B | Contaminated rows logged; final v1 files passed the Latin-character scan |
+| 2026-08-30 | Re-run final integrity and leakage checks after contamination cleaning. | Cleaning changed the candidate pools and required verification before freezing. | Verify nested subsets, blank texts, duplicate IDs, duplicate texts, Latin-character rows, and exact or normalized matches against the frozen Saudi test set. | B | v1 result: 0 leakage in both pools; logs stored in `04_cleaning_logs/` and `06_final_audit/` |
+| 2026-08-31 | Issue corpus v2 after targeted post-audit correction. | The v1 general final file still contained rows originally marked Fail or Unsure. The release needed a documented correction before training. | Re-review all 32 flagged rows against the official standard; recalibrate 19 to Pass; exclude the eight genuine defective rows; replace them from the clean reserve pool using the same stable-hash method; manually review all eight replacements. | B | No new Gemini generation; correction log stored in `general_audit_correction_log.csv` |
+| 2026-08-31 | Correct row-level metadata in v2. | v1 rows were marked `pending`, which did not clearly distinguish automatic cleaning from manual sampling. | Set `cleaning_status=passed_automatic_cleaning`; use `manual_pass` for manually reviewed rows and `not_manually_sampled` for remaining rows. | B | No `pending` rows remain in v2 |
+| 2026-08-31 | Freeze v2 for model training and supersede v1. | The corrected release must be unambiguous for Person C and reproducible through file hashes. | Freeze `general_3k_final_v2.csv`, `general_6k_final_v2.csv`, `general_12k_final_v2.csv`, and `banking_3k_final_v2.csv`; record SHA-256 hashes in `corpus_manifest_v2.json`; retain v1 for provenance only. | B | v2 frozen; v1 not for training |
+| 2026-08-31 | Confirm the v2 quality and leakage status. | The final release must not contain known reviewed defects or test leakage. | Re-run checks for blanks, duplicate IDs, duplicate texts, Latin characters, nested subsets, and exact or normalized Saudi-test matches. | B | 0 known Fail or Unsure rows in v2 final files; 0 leakage in both pools |
+| 2026-08-31 | Document v2 provenance as synthetic generated data. | The corpus is generated unlabeled text for CPT and must not be confused with labelled MSA data or the frozen Saudi test set. | Record the source type, generation method, generator model, sample-based human review, intended use, v2 correction type, and frozen status in the v2 manifest. | B | Add metadata to `corpus_manifest_v2.json` |
