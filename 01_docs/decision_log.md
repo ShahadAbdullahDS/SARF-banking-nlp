@@ -1,7 +1,7 @@
 # Decision Log
 
 | Date | Decision / Event | Why | Action / Verification | Owner | Evidence / Status |
-| --- | --- | --- | --- | --- | --- |
+| ---- | -----------------| ----------| --------- | --- | ----- |
 | 2026-08-25 | Use AraBERTv2-base as the main model. | It is the main model for the Continued Pre-Training study. | AraBERTv2-base is used for the controlled CPT conditions. | A | Approved |
 | 2026-08-25 | Use MSA train and validation data with a frozen Saudi evaluation split. | Saudi data must not be used for training, tuning, or checkpoint selection. | Use 10,732 MSA training rows and 1,229 MSA validation rows; retain the 3,580-row Saudi test split for final evaluation only. | A | Approved; PAL excluded from the pipeline |
 | 2026-08-25 | Run five AraBERT conditions: E0, E1, E2, E3, and EB. | The design separates no Saudi exposure, general Saudi-style exposure at different corpus sizes, and the additional banking-domain exposure. | E0 = no CPT; E1 = general 3K; E2 = general 6K; E3 = general 12K; EB = general 12K plus banking 3K. | A | Approved experimental design |
