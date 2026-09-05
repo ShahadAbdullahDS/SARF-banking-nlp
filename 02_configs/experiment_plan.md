@@ -44,6 +44,14 @@ The v2 files are the only synthetic files approved for training. v1 files and dr
 
 1. Keep the Saudi evaluation split closed until all condition-level training and checkpoint decisions are fixed.
 
+## Fixed AraBERT Random Seeds
+
+Use the same fixed random seeds for every official AraBERT condition:
+
+```python
+SEEDS = [42, 123, 2026]
+```
+
 ## Baseline Models
 
 The project also includes two non-CPT baselines:
