@@ -1,0 +1,114 @@
+{
+  "config_id": "arabert_config",
+  "owner": "A",
+  "status": "frozen_shared_configuration_for_E0_E1_E2_E3_EB",
+  "base_checkpoint": "aubmindlab/bert-base-arabertv2",
+  "official_conditions": ["E0", "E1", "E2", "E3", "EB"],
+  "official_seeds": [42, 123, 2026],
+  "data_policy": {
+    "train_split": "msa_train_v1",
+    "validation_split": "msa_val_v1",
+    "train_relative_path": "02_processed_data/msa_train_v1.csv",
+    "validation_relative_path": "02_processed_data/msa_val_v1.csv",
+    "label_mapping_file": "02_configs/arabert_label_mapping.json",
+    "full_train_rows": 10732,
+    "validation_rows": 1229,
+    "num_labels": 77,
+    "msa_only_for_fine_tuning": true,
+    "approved_cpt_files": "final v2 only",
+    "saudi_test_accessed": false
+  },
+  "preprocessing": {
+    "method": "ArabertPreprocessor",
+    "model_name": "aubmindlab/bert-base-arabertv2",
+    "apply_to": ["MSA fine-tuning train", "MSA validation"],
+    "CPT_note": "For CPT, tokenize only the assigned approved v2 corpus text column directly; do not apply ArabertPreprocessor to CPT text."
+  },
+  "fine_tuning": {
+    "max_length": 128,
+    "per_device_train_batch_size": 16,
+    "per_device_eval_batch_size": 32,
+    "gradient_accumulation_steps": 4,
+    "effective_train_batch_size": 64,
+    "learning_rate": 0.00002,
+    "num_train_epochs": 20,
+    "warmup_ratio": 0.0,
+    "fp16": true,
+    "early_stopping_patience": 3
+  },
+  "checkpoint_selection": {
+    "metric": "macro_f1 on MSA validation",
+    "eval_strategy": "epoch",
+    "save_strategy": "epoch",
+    "load_best_model_at_end": true,
+    "greater_is_better": true
+  },
+  "artifact_storage": {
+    "temporary_trainer_work_root": "/content",
+    "temporary_checkpoint_limit": 2,
+    "run_output_root": "05_runs/arabert",
+    "model_output_root": "06_models_and_checkpoints/arabert"
+  },
+  "cpt_defaults": {
+    "text_column_only": true,
+    "objective": "masked_language_modeling",
+    "num_train_epochs": 1,
+    "per_device_train_batch_size": 8,
+    "gradient_accumulation_steps": 1,
+    "learning_rate": 0.00005,
+    "mlm_probability": 0.15,
+    "max_length": 128,
+    "save_strategy": "no"
+  },
+  "conditions": {
+    "E0": {
+      "description": "No Saudi-style CPT; fine-tune the base AraBERT checkpoint directly on MSA.",
+      "cpt_enabled": false,
+      "cpt": null
+    },
+    "E1": {
+      "description": "CPT on 3K general Saudi-style text, then identical MSA fine-tuning.",
+      "cpt_enabled": true,
+      "cpt": {
+        "corpus_directory_relative_path": "03_synthetic_data/05_final_corpora",
+        "manifest_relative_path": "03_synthetic_data/06_final_audit/corpus_manifest_v2.json",
+        "corpus_files": ["general_3k_final_v2.csv"],
+        "corpus_file_rows": [3000],
+        "total_rows": 3000
+      }
+    },
+    "E2": {
+      "description": "CPT on 6K general Saudi-style text, then identical MSA fine-tuning.",
+      "cpt_enabled": true,
+      "cpt": {
+        "corpus_directory_relative_path": "03_synthetic_data/05_final_corpora",
+        "manifest_relative_path": "03_synthetic_data/06_final_audit/corpus_manifest_v2.json",
+        "corpus_files": ["general_6k_final_v2.csv"],
+        "corpus_file_rows": [6000],
+        "total_rows": 6000
+      }
+    },
+    "E3": {
+      "description": "CPT on 12K general Saudi-style text, then identical MSA fine-tuning.",
+      "cpt_enabled": true,
+      "cpt": {
+        "corpus_directory_relative_path": "03_synthetic_data/05_final_corpora",
+        "manifest_relative_path": "03_synthetic_data/06_final_audit/corpus_manifest_v2.json",
+        "corpus_files": ["general_12k_final_v2.csv"],
+        "corpus_file_rows": [12000],
+        "total_rows": 12000
+      }
+    },
+    "EB": {
+      "description": "CPT on 12K general Saudi-style text plus 3K Saudi banking text, then identical MSA fine-tuning.",
+      "cpt_enabled": true,
+      "cpt": {
+        "corpus_directory_relative_path": "03_synthetic_data/05_final_corpora",
+        "manifest_relative_path": "03_synthetic_data/06_final_audit/corpus_manifest_v2.json",
+        "corpus_files": ["general_12k_final_v2.csv", "banking_3k_final_v2.csv"],
+        "corpus_file_rows": [12000, 3000],
+        "total_rows": 15000
+      }
+    }
+  }
+}
