@@ -1,9 +1,6 @@
 import json
 import os
 
-os.environ["HF_HUB_OFFLINE"] = "1"
-os.environ["TRANSFORMERS_OFFLINE"] = "1"
-
 import numpy as np
 import torch
 from arabert.preprocess import ArabertPreprocessor
@@ -19,6 +16,62 @@ RETRIEVER_MODEL_PATH = os.path.join(BASE_DIR, "models", "minilm")
 
 MODEL_NAME = "aubmindlab/bert-base-arabertv2"
 MAX_LENGTH = 128
+
+HF_TOKEN = os.environ.get("HF_TOKEN")
+HF_MODEL_REPO = os.environ.get("HF_MODEL_REPO")
+HF_RETRIEVER_REPO = os.environ.get("HF_RETRIEVER_REPO")
+HF_RETRIEVAL_INDEX_REPO = os.environ.get("HF_RETRIEVAL_INDEX_REPO")
+HF_RETRIEVAL_INDEX_FILENAME = os.environ.get(
+    "HF_RETRIEVAL_INDEX_FILENAME", "msa_train_retrieval_index.pt"
+)
+
+
+def _checkpoint_present(path: str) -> bool:
+    return os.path.isfile(os.path.join(path, "config.json")) and os.path.isfile(
+        os.path.join(path, "model.safetensors")
+    )
+
+
+def _ensure_models_available():
+    """Download the checkpoint, retriever, and retrieval index from a private
+    Hugging Face Hub repo only when they are not already present locally.
+    Local Docker deployments ship these files baked in, so this is a no-op
+    there; the cloud demo downloads them once at startup using HF_TOKEN from
+    Streamlit secrets, then runs fully offline for the rest of the session.
+    """
+    from huggingface_hub import snapshot_download, hf_hub_download
+
+    if not _checkpoint_present(CHECKPOINT_PATH) and HF_MODEL_REPO:
+        snapshot_download(
+            repo_id=HF_MODEL_REPO,
+            token=HF_TOKEN,
+            local_dir=CHECKPOINT_PATH,
+        )
+
+    if not os.path.isdir(RETRIEVER_MODEL_PATH) and HF_RETRIEVER_REPO:
+        snapshot_download(
+            repo_id=HF_RETRIEVER_REPO,
+            token=HF_TOKEN,
+            local_dir=RETRIEVER_MODEL_PATH,
+        )
+
+    if not os.path.exists(RETRIEVAL_INDEX_PATH) and HF_RETRIEVAL_INDEX_REPO:
+        os.makedirs(os.path.dirname(RETRIEVAL_INDEX_PATH), exist_ok=True)
+        downloaded_path = hf_hub_download(
+            repo_id=HF_RETRIEVAL_INDEX_REPO,
+            filename=HF_RETRIEVAL_INDEX_FILENAME,
+            repo_type="dataset",
+            token=HF_TOKEN,
+        )
+        if os.path.abspath(downloaded_path) != os.path.abspath(RETRIEVAL_INDEX_PATH):
+            import shutil
+            shutil.copyfile(downloaded_path, RETRIEVAL_INDEX_PATH)
+
+
+_ensure_models_available()
+
+os.environ["HF_HUB_OFFLINE"] = "1"
+os.environ["TRANSFORMERS_OFFLINE"] = "1"
 
 preprocessor = ArabertPreprocessor(model_name=MODEL_NAME, apply_farasa_segmentation=False)
 tokenizer = AutoTokenizer.from_pretrained(CHECKPOINT_PATH)
