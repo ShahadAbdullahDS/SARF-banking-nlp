@@ -5,7 +5,9 @@ transformers==5.17.0
 arabert==1.0.1
 sentence-transformers==6.0.1
 safetensors==0.8.0
-numpy==2.2.6
-pandas==2.3.0
+numpy>=2.3
+pandas>=2.2,<3
 Pillow==11.3.0
 plotly==5.24.1
+huggingface_hub==0.26.2
+ 
