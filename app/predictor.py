@@ -33,12 +33,6 @@ def _checkpoint_present(path: str) -> bool:
 
 
 def _ensure_models_available():
-    """Download the checkpoint, retriever, and retrieval index from a private
-    Hugging Face Hub repo only when they are not already present locally.
-    Local Docker deployments ship these files baked in, so this is a no-op
-    there; the cloud demo downloads them once at startup using HF_TOKEN from
-    Streamlit secrets, then runs fully offline for the rest of the session.
-    """
     from huggingface_hub import snapshot_download, hf_hub_download
 
     if not _checkpoint_present(CHECKPOINT_PATH) and HF_MODEL_REPO:
@@ -73,7 +67,13 @@ _ensure_models_available()
 os.environ["HF_HUB_OFFLINE"] = "1"
 os.environ["TRANSFORMERS_OFFLINE"] = "1"
 
+class _NoOpFarasaSegmenter:
+    def segment(self, text):
+        return text
+
+
 preprocessor = ArabertPreprocessor(model_name=MODEL_NAME, apply_farasa_segmentation=False)
+preprocessor.farasa_segmenter = _NoOpFarasaSegmenter()
 tokenizer = AutoTokenizer.from_pretrained(CHECKPOINT_PATH)
 model = AutoModelForSequenceClassification.from_pretrained(CHECKPOINT_PATH)
 model.eval()
