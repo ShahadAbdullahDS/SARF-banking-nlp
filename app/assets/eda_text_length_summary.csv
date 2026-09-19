@@ -1,0 +1,5 @@
+﻿split,mean_words,median_words,95th_percentile_words,maximum_words,mean_characters
+msa_train,9.97,8.0,25.0,68,52.51
+msa_val,10.27,8.0,25.0,61,54.01
+msa_test,9.35,8.0,21.0,58,49.42
+saudi_test,7.83,7.0,17.0,45,41.12

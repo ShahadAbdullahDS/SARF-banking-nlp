@@ -1,0 +1,6 @@
+services:
+  sarf-app:
+    build: .
+    container_name: sarf-intent-demo
+    ports:
+      - "8501:8501"
