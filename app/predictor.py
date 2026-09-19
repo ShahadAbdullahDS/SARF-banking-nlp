@@ -20,7 +20,7 @@ RETRIEVER_MODEL_PATH = os.path.join(BASE_DIR, "models", "minilm")
 MODEL_NAME = "aubmindlab/bert-base-arabertv2"
 MAX_LENGTH = 128
 
-preprocessor = ArabertPreprocessor(model_name=MODEL_NAME)
+preprocessor = ArabertPreprocessor(model_name=MODEL_NAME, apply_farasa_segmentation=False)
 tokenizer = AutoTokenizer.from_pretrained(CHECKPOINT_PATH)
 model = AutoModelForSequenceClassification.from_pretrained(CHECKPOINT_PATH)
 model.eval()
