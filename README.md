@@ -207,8 +207,11 @@ SARF is an educational and research prototype. Its predictions are not financial
 
 ## References
 
-- [1] [ArBanking77: A Multilingual and Multi-Dialect Dataset for Arabic Banking Intent Classification](https://aclanthology.org/2023.arabicnlp-1.22/)
-- [2] [AraBERT: Transformer-based Model for Arabic Language Understanding](https://aclanthology.org/2020.osact-1.2/)
-- [3] [AraBERTv2-base model card](https://huggingface.co/aubmindlab/bert-base-arabertv2)
-- [4] [scikit-learn F1-score documentation](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.f1_score.html)
+- [1] [ArBanking77: Intent Detection Neural Model and a New Dataset in Modern and Dialectical Arabic](https://aclanthology.org/2023.arabicnlp-1.22/)
+- [2] [AraBERTv2-base model card](https://huggingface.co/aubmindlab/bert-base-arabertv2)
+- [3] [Don’t Stop Pretraining: Adapt Language Models to Domains and Tasks](https://aclanthology.org/2020.acl-main.740/)
+- [4] [Synthetic Continued Pretraining](https://openreview.net/pdf?id=07yvxWDSla)
+- [5] [AraFinNLP 2024: The First Arabic Financial NLP Shared Task](https://aclanthology.org/2024.arabicnlp-1.34/)
+- [6] [MA at AraFinNLP2024: BERT-based Ensemble for Cross-dialectal Arabic Intent Detection](https://aclanthology.org/2024.arabicnlp-1.41/)
+
 
