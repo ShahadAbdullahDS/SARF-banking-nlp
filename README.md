@@ -205,6 +205,18 @@ Raw datasets, model weights, and generated run directories are excluded from the
 
 SARF is an educational and research prototype. Its predictions are not financial advice, are not guaranteed to be correct, and must not be used to execute or approve banking actions.
 
+## Team & Contact
+
+SARF was developed as an NLP capstone project. For questions about the project, feel free to contact any of the team members:
+
+| Name | Role | Email | LinkedIn |
+|---|---|---|---|
+| Shahad Al-Harbi | Leader | alharbi.a.shahad1@gmail.com | [LinkedIn](https://linkedin.com/in/alharbishahad) |
+| Elaf Al-youbi | Team Member | elafalyoubi@gmail.com | [LinkedIn](https://www.linkedin.com/in/elaf-alyoubi-b8175742b/) |
+| Shomokh Al-Harbi | Team Member | shmokhsidi79@gmail.com |  |
+
+---
+
 ## References
 
 - [1] [ArBanking77: Intent Detection Neural Model and a New Dataset in Modern and Dialectical Arabic](https://aclanthology.org/2023.arabicnlp-1.22/)
